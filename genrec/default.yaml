@@ -1,0 +1,23 @@
+num_proc: 1
+cache_dir: cache/       # Usually for raw and processed data
+log_dir: logs/
+tensorboard_log_dir: tensorboard/
+ckpt_dir: ckpt/
+run_id: genrec_default  # Change this to your customized run id
+rand_seed: 2024
+reproducibility: True
+
+train_batch_size: 256
+eval_batch_size: 32
+lr: 0.0003
+weight_decay: 0.0
+warmup_steps: 10000
+steps: ~
+epochs: 150
+max_grad_norm: 1.0      # None for no clipping, else a float value
+eval_interval: 1        # Evaluate every n epochs
+patience: 20            # Early stopping. Stop training after n epochs without improvement. Set to None to disable
+
+topk: [5,10]
+metrics: [ndcg,recall]
+val_metric: ndcg@10

@@ -1,0 +1,45 @@
+# Overwritting configs
+metadata: sentence
+
+# Config the sentence embedding model
+#   Sentence T5
+# sent_emb_model: sentence-transformers/sentence-t5-base
+# sent_emb_dim: 768
+# sent_emb_pca: 128
+#   OpenAI Embedding Model
+sent_emb_model: text-embedding-3-large
+sent_emb_dim: 3072
+sent_emb_pca: 512
+openai_api_key: ~
+
+sent_emb_batch_size: 512
+
+# Config for the backbone model
+max_item_seq_len: 50
+n_embd: 448
+n_layer: 2
+n_head: 4
+n_inner: 1024
+activation_function: gelu_new
+resid_pdrop: 0.0
+embd_pdrop: 0.5
+attn_pdrop: 0.5
+layer_norm_epsilon: 1e-12
+initializer_range: 0.02
+
+# Semantic ID configs
+n_codebook: 32
+codebook_size: 256
+opq_use_gpu: False
+opq_gpu_id: 0
+faiss_omp_num_threads: 32
+
+# RPG configs
+#   model
+temperature: 0.07
+num_beams: 50
+n_edges: 50
+propagation_steps: 3
+#   decoding graph construction
+chunk_size: 1024
+num_workers: 64
