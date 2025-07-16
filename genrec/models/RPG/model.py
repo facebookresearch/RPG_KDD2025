@@ -88,6 +88,7 @@ class RPG(AbstractModel):
         self.generate_w_decoding_graph = False
         self.init_flag = False
         self.chunk_size = config['chunk_size']
+        self.num_beams = config['num_beams']
         self.n_edges = config['n_edges']
         self.propagation_steps = config['propagation_steps']
 
@@ -228,13 +229,23 @@ class RPG(AbstractModel):
     def graph_propagation(self, token_logits, n_return_sequences):
         batch_size = token_logits.shape[0]
 
+        # Initialize visited nodes tracking
+        visited_nodes = {}
+        for batch_id in range(batch_size):
+            visited_nodes[batch_id] = set()
+
         # Randomly sample num_beams distinct node IDs in [1..n_nodes]
         topk_nodes_sorted = torch.randint(
             1, self.dataset.n_items,
-            (batch_size, self.config['num_beams']),
+            (batch_size, self.num_beams),
             dtype=torch.long,
             device=token_logits.device
         )
+
+        # Add initial nodes to visited set
+        for batch_id in range(batch_size):
+            for node in topk_nodes_sorted[batch_id].cpu().numpy().tolist():
+                visited_nodes[batch_id].add(node)
 
         for sid in range(self.propagation_steps):
             # Find neighbors of these top num_beams nodes
@@ -244,16 +255,25 @@ class RPG(AbstractModel):
             next_nodes = []
             for batch_id in range(batch_size):
                 neighbors_in_batch = torch.unique(all_neighbors[batch_id])
+
+                # Add neighbors to visited set
+                for node in neighbors_in_batch.cpu().numpy().tolist():
+                    visited_nodes[batch_id].add(node)
+
                 scores = torch.gather(
                     input=token_logits[batch_id].unsqueeze(0).expand(neighbors_in_batch.shape[0], -1),
                     dim=-1,
                     index=(self.item_id2tokens[neighbors_in_batch] - 1)
                 ).mean(dim=-1)
 
-                idxs = torch.topk(scores, self.config['num_beams']).indices
+                idxs = torch.topk(scores, self.num_beams).indices
                 next_nodes.append(neighbors_in_batch[idxs])
             topk_nodes_sorted = torch.stack(next_nodes, dim=0)
-        return topk_nodes_sorted[:,:n_return_sequences].unsqueeze(-1)
+
+        # Convert visited counts to tensor
+        visited_counts = torch.FloatTensor([[len(visited_nodes[batch_id])] for batch_id in range(batch_size)])
+
+        return topk_nodes_sorted[:,:n_return_sequences].unsqueeze(-1), visited_counts
 
     def generate(self, batch, n_return_sequences=1):
         outputs = self.forward(batch, return_loss=False)

@@ -169,7 +169,12 @@ class Trainer:
                 batch = {k: v.to(self.accelerator.device) for k, v in batch.items()}
                 if self.config['use_ddp']: # ddp, gather data from all devices for evaluation
                     preds = self.model.module.generate(batch, n_return_sequences=self.evaluator.maxk)
-                    all_preds, all_labels = self.accelerator.gather_for_metrics((preds, batch['labels']))
+                    if isinstance(preds, tuple):
+                        preds, n_visited_items = preds
+                        all_preds, all_labels, all_n_visited_items = self.accelerator.gather_for_metrics((preds, batch['labels'], n_visited_items))
+                        all_preds = (all_preds, all_n_visited_items)
+                    else:
+                        all_preds, all_labels = self.accelerator.gather_for_metrics((preds, batch['labels']))
                     results = self.evaluator.calculate_metrics(all_preds, all_labels)
                 else:
                     preds = self.model.generate(batch, n_return_sequences=self.evaluator.maxk)
@@ -183,6 +188,7 @@ class Trainer:
             for k in self.config['topk']:
                 key = f"{metric}@{k}"
                 output_results[key] = torch.cat(all_results[key]).mean().item()
+        output_results['n_visited_items'] = torch.cat(all_results['n_visited_items']).mean().item()
         return output_results
 
     def case_evaluate(self, dataloader, split='test'):

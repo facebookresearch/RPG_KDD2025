@@ -48,9 +48,14 @@ class Evaluator:
         return dcg[:, :k].sum(dim=1).cpu().float()
 
     def calculate_metrics(self, preds, labels):
+        if isinstance(preds, tuple):
+            preds, n_visited_items = preds
+        else:
+            n_visited_items = torch.FloatTensor([len(self.tokenizer.item2tokens)] * preds.shape[0])
         results = {}
         pos_index = self.calculate_pos_index(preds, labels)
         for metric in self.config['metrics']:
             for k in self.config['topk']:
                 results[f"{metric}@{k}"] = self.metric2func[metric](pos_index, k)
+        results['n_visited_items'] = n_visited_items
         return results

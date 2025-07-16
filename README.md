@@ -39,9 +39,9 @@ CUDA_VISIBLE_DEVICES=0 python main.py \
     --lr=0.003 \
     --temperature=0.03 \
     --n_codebook=16 \
-    --num_beams=10 \
-    --n_edges=100 \
-    --propagation_steps=2
+    --num_beams=100 \
+    --n_edges=30 \
+    --propagation_steps=5
 ```
 
 ### Beauty
@@ -52,8 +52,8 @@ CUDA_VISIBLE_DEVICES=0 python main.py \
     --lr=0.01 \
     --temperature=0.03 \
     --n_codebook=32 \
-    --num_beams=10 \
-    --n_edges=100 \
+    --num_beams=20 \
+    --n_edges=200 \
     --propagation_steps=3
 ```
 
@@ -65,9 +65,9 @@ CUDA_VISIBLE_DEVICES=0 python main.py \
     --lr=0.003 \
     --temperature=0.03 \
     --n_codebook=16 \
-    --num_beams=10 \
-    --n_edges=50 \
-    --propagation_steps=5
+    --num_beams=200 \
+    --n_edges=20 \
+    --propagation_steps=3
 ```
 
 ### CDs and Vinyl
@@ -78,9 +78,9 @@ CUDA_VISIBLE_DEVICES=0 python main.py \
     --lr=0.001 \
     --temperature=0.03 \
     --n_codebook=64 \
-    --num_beams=10 \
+    --num_beams=20 \
     --n_edges=500 \
-    --propagation_steps=3
+    --propagation_steps=5
 ```
 
 ## Citing this work
